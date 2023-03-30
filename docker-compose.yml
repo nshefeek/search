@@ -1,0 +1,79 @@
+version: '3.9'
+services:
+  app:
+    build:
+      dockerfile: Dockerfile.app
+      context: .
+    image: search:latest
+    ports:
+      - target: 80
+        published: 8080
+    volumes:
+      - type: bind
+        source: ./app
+        target: /app
+    environment:
+      - PYTHONPATH=/app:.:..
+      - ES_HOST=http://elasticsearch:9200
+    env_file:
+      # Credentials that should not be added to the repo.
+      - ./app/.env
+    command: uvicorn app.main:app --host 0.0.0.0 --port 80 --reload
+    networks: 
+      - share-network
+  postgres:
+    image: postgres:14.1-alpine
+    restart: always
+    environment:
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_USER=postgres
+      - POSTGRES_DB=spinneys
+    ports:
+      - 5432:5432
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks: 
+      - share-network
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.6.2
+    ports:
+      - 9300:9300
+      - 9200:9200
+    environment:
+      - http.cors.enabled=true
+      - http.cors.allow-origin="*"
+      - http.cors.allow-methods=OPTIONS,HEAD,GET,POST,PUT,DELETE
+      - http.cors.allow-headers=X-Requested-With,X-Auth-Token,Content-Type,Content-Length,Authorization
+      - transport.host=127.0.0.1
+      - cluster.name=docker-cluster
+      - discovery.type=single-node
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+    volumes:
+      - elasticsearch_data:/usr/share/elasticsearch/data
+    networks:
+      - share-network
+    healthcheck:
+      interval: 30s
+      retries: 10
+      test: curl -s http://elasticsearch:9200/_cluster/health | grep -vq '"status":"red"'
+  kibana:
+    image: docker.elastic.co/kibana/kibana:8.6.2
+    ports:
+      - 5601:5601
+    networks:
+      - share-network
+    depends_on:
+      elasticsearch:
+        condition: service_healthy
+    environment:
+      ELASTICSEARCH_URL: http://localhost:9200
+      ELASTICSEARCH_HOSTS: http://localhost:9200
+    healthcheck:
+      interval: 30s
+      retries: 20
+      test: curl --write-out 'HTTP %{http_code}' --fail --silent --output /dev/null http://localhost:5601/api/status
+volumes:
+  elasticsearch_data:
+  postgres_data:
+networks:
+  share-network:
