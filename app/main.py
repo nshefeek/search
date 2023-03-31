@@ -4,4 +4,4 @@ from app.routers import posts
 
 app = FastAPI()
 
-app.include_router(posts.router, prefix="/posts")
+app.include_router(posts.router, prefix="/products")

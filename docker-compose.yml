@@ -48,6 +48,7 @@ services:
       - cluster.name=docker-cluster
       - discovery.type=single-node
       - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+      - xpack.security.enabled=false
     volumes:
       - elasticsearch_data:/usr/share/elasticsearch/data
     networks:
@@ -66,8 +67,8 @@ services:
       elasticsearch:
         condition: service_healthy
     environment:
-      ELASTICSEARCH_URL: http://localhost:9200
-      ELASTICSEARCH_HOSTS: http://localhost:9200
+     - SERVERNAME=kibana
+     - ELASTICSEARCH_URL= http://elasticsearch:9200
     healthcheck:
       interval: 30s
       retries: 20
