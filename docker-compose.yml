@@ -22,7 +22,9 @@ services:
     networks: 
       - share-network
   postgres:
-    image: postgres:14.1-alpine
+    build:
+      dockerfile: Dockerfile.postgres
+      context: .
     restart: always
     environment:
       - POSTGRES_PASSWORD=postgres
@@ -34,11 +36,28 @@ services:
       - postgres_data:/var/lib/postgresql/data
     networks: 
       - share-network
+  pgsync:
+    build:
+      context: .
+      dockerfile: Dockerfile.pgsync
+    environment:
+      - PG_USER=postgres
+      - PG_PASSWORD=postgres
+      - PG_DATABASE=spinneys
+      - PG_HOST=postgres
+      - ELASTICSEARCH_HOST=elasticsearch
+      - REDIS_HOST=redis
+    networks:
+      - share-network
   elasticsearch:
     image: docker.elastic.co/elasticsearch/elasticsearch:8.6.2
     ports:
       - 9300:9300
       - 9200:9200
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
     environment:
       - http.cors.enabled=true
       - http.cors.allow-origin="*"
@@ -73,6 +92,12 @@ services:
       interval: 30s
       retries: 20
       test: curl --write-out 'HTTP %{http_code}' --fail --silent --output /dev/null http://localhost:5601/api/status
+  redis:
+    image: 'redis:alpine'
+    ports:
+      - 6379:6379
+    networks:
+      - share-network
 volumes:
   elasticsearch_data:
   postgres_data:
