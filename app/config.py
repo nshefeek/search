@@ -10,7 +10,7 @@ config = Config('.env')
 
 
 # Database Config
-SHOW_SQL=config('SHOW_SQL', cast=bool, default=False)
+SHOW_SQL = config('SHOW_SQL', cast=bool, default=False)
 DATABASE_HOSTNAME = config("DATABASE_HOSTNAME", default="localhost")
 DATABASE_CREDENTIALS = config("DATABASE_CREDENTIALS", cast=Secret, default="postgres:postgres")
 _DATABASE_CREDENTIAL_USER, _DATABASE_CREDENTIAL_PASSWORD = str(DATABASE_CREDENTIALS).split(":")
@@ -23,6 +23,6 @@ SQLALCHEMY_DATABASE_URI = f"postgresql+psycopg2://{_DATABASE_CREDENTIAL_USER}:{_
 
 
 # Elasticsearch Config
-ELASTICSEARCH_HOST = config("ELASTICSEARCH_HOST", default="http://localhost:9200/")
+ELASTICSEARCH_HOST = config("ELASTICSEARCH_HOST", default="http://elasticsearch:9200/")
 ELASTICSEARCH_USER = config("ELASTICSEARCH_USER", default="elastic")
 ELASTICSEARCH_PASSWORD = config("ELASTICSEARCH_PASSWORD", default="changeme")

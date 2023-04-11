@@ -12,6 +12,12 @@
         "rating",
         "keywords",
         "ranking",
+        "is_organic",
+        "country",
+        "display_kg_or_each",
+        "display_unit",
+        "min_qty",
+        "is_weight_based",
         "date_created",
         "date_updated"
       ]
